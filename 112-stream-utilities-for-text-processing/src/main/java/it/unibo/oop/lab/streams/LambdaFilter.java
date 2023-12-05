@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,15 +41,31 @@ public final class LambdaFilter extends JFrame {
         /**
          * Commands.
          */
-        IDENTITY("No modifications", Function.identity());
-
+        IDENTITY("No modifications", Function.identity())
+        ,TOLOWERCASE("Convert to lowercase", (s) -> s.toLowerCase())
+        ,COUNTCHARS("Count chars", (s) -> Integer.toString(s.length()))
+        ,COUNTLINES("Count lines",(s) -> Long.toString(s.lines().count()))
+        ,LISTWORDSALPHABETICALLY("List worlds alphabetically", (s) -> (Stream.of((s.split(" "))))
+            .sorted((s1,s2)->s1.toLowerCase().compareTo(s2.toLowerCase()))
+            .reduce((x1,x2) -> x1+" "+x2)
+            .get()
+            )
+        ,COUNTCHARPERWORD("Count chars per word",(s) -> Stream.of((s.split(" ")))
+            .collect(Collectors.groupingBy(Function.identity(),Collectors.counting()))
+            .entrySet().stream()
+            .map(e -> e.getKey() + " -> " + Long.toString(e.getValue()))
+            .reduce((x1,x2) -> x1+" "+x2)
+            .get()
+            );
         private final String commandName;
         private final Function<String, String> fun;
+
 
         Command(final String name, final Function<String, String> process) {
             commandName = name;
             fun = process;
         }
+
 
         @Override
         public String toString() {
